@@ -3,9 +3,11 @@ const nextConfig = {
   images: {
     domains: ["ipfs.io", "github.com"],
   },
-  reactStrictMode: true,
   webpack: (config) => {
-    config.externals.push("pino-pretty", "lokijs", "encoding");
+    config.resolve.fallback = {
+      ...config.resolve.fallback, // This spreads existing fallbacks
+      "tfhe_bg.wasm": require.resolve("tfhe/tfhe_bg.wasm"),
+    };
     return config;
   },
 };

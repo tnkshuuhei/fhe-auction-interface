@@ -3,10 +3,8 @@ import "./globals.css";
 import "@rainbow-me/rainbowkit/styles.css";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { WagmiProvider, http } from "wagmi";
-import { optimismSepolia } from "wagmi/chains";
 import { getDefaultConfig, RainbowKitProvider } from "@rainbow-me/rainbowkit";
 import { defineChain } from "viem";
-
 import React from "react";
 import Header from "@/components/Header";
 import { Toaster } from "@/components/ui/toaster";
@@ -27,11 +25,9 @@ const config = getDefaultConfig({
   appName: "Scaffold",
   projectId: process.env.NEXT_PUBLIC_PROJECT_ID!,
   chains: [zamaDevnet],
-  transports: {
-    [zamaDevnet.id]: http("https://devnet.zama.ai"),
-  },
   ssr: true,
 });
+
 const client = new QueryClient();
 
 export default function RootLayout({

@@ -9,6 +9,7 @@ import React from "react";
 import Header from "@/components/Header";
 import { Toaster } from "@/components/ui/toaster";
 import { StateProvider } from "@/contexts";
+import { mainnet } from "viem/chains";
 
 const zamaDevnet = defineChain({
   id: 8009,
@@ -25,7 +26,8 @@ const zamaDevnet = defineChain({
 const config = getDefaultConfig({
   appName: "Scaffold",
   projectId: process.env.NEXT_PUBLIC_PROJECT_ID!,
-  chains: [zamaDevnet],
+  chains: [zamaDevnet, mainnet],
+
   ssr: true,
 });
 

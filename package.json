@@ -27,7 +27,7 @@
     "eslint": "^8.57.0",
     "eslint-config-next": "^14.1.4",
     "ethers": "^6.11.1",
-    "fhevmjs": "^0.4.0",
+    "fhevmjs": "^0.2.2",
     "lucide-react": "^0.350.0",
     "next": "^14.1.4",
     "next-themes": "^0.2.1",

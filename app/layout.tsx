@@ -8,6 +8,7 @@ import { defineChain } from "viem";
 import React from "react";
 import Header from "@/components/Header";
 import { Toaster } from "@/components/ui/toaster";
+import { StateProvider } from "@/contexts";
 
 const zamaDevnet = defineChain({
   id: 8009,
@@ -41,9 +42,11 @@ export default function RootLayout({
         <WagmiProvider config={config} reconnectOnMount={true}>
           <QueryClientProvider client={client}>
             <RainbowKitProvider>
-              <Header />
-              <Toaster />
-              {children}
+              <StateProvider>
+                <Header />
+                <Toaster />
+                {children}
+              </StateProvider>
             </RainbowKitProvider>
           </QueryClientProvider>
         </WagmiProvider>

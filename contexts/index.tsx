@@ -1,8 +1,7 @@
 "use client";
 import { useEthersProvider } from "@/hooks/useEthers";
 import { FhevmInstance, initFhevm } from "fhevmjs";
-import { createContext, useContext, useEffect, useMemo, useState } from "react";
-import { useAccount, useChainId } from "wagmi";
+import { createContext, useContext, useMemo, useState } from "react";
 import { createInstance } from "fhevmjs/web";
 import { ethers } from "ethers";
 
@@ -11,7 +10,6 @@ const stateContext = createContext<any>(null);
 export const StateProvider = ({ children }: { children: React.ReactNode }) => {
   const [isInitialized, setIsInitialized] = useState(false);
   const [instance, setInstance] = useState<FhevmInstance | null>(null);
-  const { address } = useAccount();
   const chainId = 8009;
   const provider = useEthersProvider({ chainId });
 

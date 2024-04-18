@@ -4,42 +4,48 @@ import { FhevmInstance, initFhevm } from "fhevmjs";
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { useAccount, useChainId } from "wagmi";
 import { createInstance } from "fhevmjs/web";
+import { ethers } from "ethers";
 
 const stateContext = createContext<any>(null);
 
 export const StateProvider = ({ children }: { children: React.ReactNode }) => {
-  const [instance, setInstance] = useState<FhevmInstance>();
+  const [isInitialized, setIsInitialized] = useState(false);
+  const [instance, setInstance] = useState<FhevmInstance | null>(null);
   const { address } = useAccount();
   const chainId = 8009;
   const provider = useEthersProvider({ chainId });
-  // const chainId = useChainId();
 
   useMemo(async () => {
     await initFhevm();
-    createFhevmInstance();
-    console.log("fhevm initialized");
-  }, [provider, address]);
+    await createFhevmInstance();
+  }, []);
+
   const createFhevmInstance = async () => {
-    const publicKey = await provider?.call({
+    if (!provider) return;
+    const ret = await provider.call({
       // fhe lib address, may need to be changed depending on network
       to: "0x000000000000000000000000000000000000005d",
       // first four bytes of keccak256('fhePubKey(bytes1)') + 1 byte for library
       data: "0xd9d47bb001",
     });
 
+    const decoded = ethers.AbiCoder.defaultAbiCoder().decode(["bytes"], ret);
+    const publicKey = decoded[0];
+
     const instance = await createInstance({ chainId, publicKey } as {
       chainId: number;
       publicKey: string;
     });
-    console.log("instance", instance);
     setInstance(instance);
+    setIsInitialized(true);
+    console.log("fhevm initialized");
   };
   const getTokenSignature = async (
     contractAddress: string,
     userAddress: string
   ) => {
-    if (instance!.hasKeypair(contractAddress)) {
-      return instance!.getTokenSignature(contractAddress)!;
+    if (instance?.hasKeypair(contractAddress)) {
+      return instance.getTokenSignature(contractAddress)!;
     } else {
       const { publicKey, token } = instance!.generateToken({
         verifyingContract: contractAddress,
@@ -53,13 +59,18 @@ export const StateProvider = ({ children }: { children: React.ReactNode }) => {
       return { signature, publicKey };
     }
   };
+  const getInstance = () => {
+    if (!instance) return;
+    return instance;
+  };
 
   return (
     <stateContext.Provider
       value={{
         getTokenSignature,
         createFhevmInstance,
-        instance,
+        getInstance,
+        isInitialized,
       }}
     >
       {children}

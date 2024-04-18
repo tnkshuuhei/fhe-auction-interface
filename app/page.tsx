@@ -1,23 +1,23 @@
 "use client";
 import { Button } from "@/components/ui/button";
-import { init, getInstance } from "@/lib/fhevm";
-import { useEffect, useState } from "react";
+import { StateContext } from "@/contexts";
+import { FhevmInstance } from "fhevmjs";
+
 export default function Home() {
-  const [isInitialized, setIsInitialized] = useState(false);
+  const { getInstance, isInitialized } = StateContext();
 
-  useEffect(() => {
-    init()
-      .then(() => {
-        setIsInitialized(true);
-      })
-      .catch(() => setIsInitialized(false));
-  }, []);
+  const instance: FhevmInstance = getInstance();
 
-  if (!isInitialized) return null;
+  function encryptEuint32() {
+    if (!isInitialized || !instance)
+      return console.error("Instance not initialized");
+    const euint32 = instance.encrypt32(1234);
+    console.log(euint32);
+  }
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <Button>Click me</Button>
+      <Button onClick={() => encryptEuint32()}>Click me</Button>
     </main>
   );
 }

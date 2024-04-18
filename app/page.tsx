@@ -12,7 +12,7 @@ export default function Home() {
     if (!isInitialized || !instance)
       return console.error("Instance not initialized");
     const euint32 = instance.encrypt32(1234);
-    console.log(euint32);
+    console.log("euint32: ", euint32);
   }
 
   return (

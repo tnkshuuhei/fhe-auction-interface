@@ -1,20 +1,15 @@
 import { useToast } from "@/components/ui/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import {
   useReadContract,
   useWriteContract,
   useWaitForTransactionReceipt,
 } from "wagmi";
-
 import { vickreyAuction } from "@/constants/vickreyAuction";
 
 export const useVickreyAuction = () => {
   const { toast } = useToast();
-
-  const queryClient = useQueryClient();
-
-  const { queryKey } = useReadContract();
 
   const beneficiary = useReadContract({
     ...vickreyAuction,
@@ -26,21 +21,23 @@ export const useVickreyAuction = () => {
     ...vickreyAuction,
     functionName: "endTime",
     chainId: 8009,
-    query: {
-      refetchInterval: 1000,
-    },
   });
 
   const isHighestBidder = useReadContract({
     ...vickreyAuction,
     functionName: "doIHaveHighestBid",
     args: ["0x", "0x"], // publickey, signature
+    chainId: 8009,
   });
 
   const bidData = useReadContract({
     ...vickreyAuction,
     functionName: "getBid",
     args: ["0x", "0x"], // publickey, signature
+    chainId: 8009,
+    query: {
+      refetchInterval: 30000,
+    },
   });
 
   const { data: bidHash, writeContract: bid } = useWriteContract();
@@ -59,6 +56,7 @@ export const useVickreyAuction = () => {
         ...vickreyAuction,
         functionName: "bid",
         args: [encryptedValue],
+        chainId: 8009,
       },
       {
         onSuccess: () => toast({ description: "Tx sent" }),
@@ -72,6 +70,7 @@ export const useVickreyAuction = () => {
       {
         ...vickreyAuction,
         functionName: "auctionEnd",
+        chainId: 8009,
       },
       {
         onSuccess: () => toast({ description: "Tx sent" }),
@@ -85,6 +84,7 @@ export const useVickreyAuction = () => {
       {
         ...vickreyAuction,
         functionName: "claim",
+        chainId: 8009,
       },
       {
         onSuccess: () => toast({ description: "Tx sent" }),
@@ -95,13 +95,13 @@ export const useVickreyAuction = () => {
 
   useEffect(() => {
     if (isSuccessClaim) {
-      toast({ description: "Claimed!" });
+      toast({ description: "Claim successful!" });
     }
   }, [isSuccessClaim]);
 
   useEffect(() => {
     if (isSuccessBid) {
-      toast({ description: "Bid placed!" });
+      toast({ description: "Bid successful!" });
     }
   }, [isSuccessBid]);
 
@@ -113,5 +113,7 @@ export const useVickreyAuction = () => {
     placeBid,
     claimBid,
     endAuction,
+    isLoadingBid,
+    isLoadingClaim,
   };
 };

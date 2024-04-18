@@ -8,20 +8,9 @@ const Header = () => {
   return (
     <div>
       <nav className=" border-gray-200 px-4 lg:px-6 py-5">
-        <div className="flex flex-wrap justify-between items-center mx-auto max-w-screen-xl">
-          <Link href="/" className="flex items-center">
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              width={100}
-              height={24}
-              priority
-            />
-          </Link>
-
-          <div className="flex items-center lg:order-2 gap-4">
-            <ConnectButton />
-          </div>
+        <div className="flex md:flex-row flex-col justify-between items-center mx-auto max-w-screen-xl">
+          <h2 className="font-bold text-2xl">FHE Vickrey Auction</h2>
+          <ConnectButton />
         </div>
       </nav>
     </div>

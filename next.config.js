@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
-    domains: ["ipfs.io", "github.com"],
+    domains: ["ipfs.io", "github.com", "picsum.photos"],
   },
   webpack: (config) => {
     config.resolve.fallback = {

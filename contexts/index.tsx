@@ -10,6 +10,7 @@ const stateContext = createContext<any>(null);
 export const StateProvider = ({ children }: { children: React.ReactNode }) => {
   const [isInitialized, setIsInitialized] = useState(false);
   const [instance, setInstance] = useState<FhevmInstance | null>(null);
+  const [publicKey, setPublicKey] = useState<`0x${string}`>();
   const chainId = 8009;
   const provider = useEthersProvider({ chainId });
 
@@ -32,10 +33,11 @@ export const StateProvider = ({ children }: { children: React.ReactNode }) => {
 
     const instance = await createInstance({ chainId, publicKey } as {
       chainId: number;
-      publicKey: string;
+      publicKey: `0x${string}`;
     });
     setInstance(instance);
     setIsInitialized(true);
+    setPublicKey(publicKey);
     console.log("fhevm initialized");
   };
   const getTokenSignature = async (
@@ -69,6 +71,7 @@ export const StateProvider = ({ children }: { children: React.ReactNode }) => {
         createFhevmInstance,
         getInstance,
         isInitialized,
+        publicKey,
       }}
     >
       {children}

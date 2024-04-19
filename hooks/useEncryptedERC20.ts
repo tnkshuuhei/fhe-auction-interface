@@ -18,7 +18,7 @@ export const useEncryptedERC20 = () => {
   const { isLoading: isLoadingMint, isSuccess: isSuccessMint } =
     useWaitForTransactionReceipt({ hash: mintHash });
 
-  function mintToken(amount: number) {
+  async function mintToken(amount: number) {
     mint(
       {
         ...encryptedErc20,
@@ -33,7 +33,7 @@ export const useEncryptedERC20 = () => {
     );
   }
 
-  function approveSpender(
+  async function approveSpender(
     spender: `0x${string}`,
     encryptedAmount: `0x${string}`
   ) {

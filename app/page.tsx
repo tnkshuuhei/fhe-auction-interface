@@ -2,7 +2,6 @@
 import { Button } from "@/components/ui/button";
 import { StateContext } from "@/contexts";
 import { FhevmInstance } from "fhevmjs";
-
 import {
   Card,
   CardContent,
@@ -14,18 +13,35 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import Image from "next/image";
 import React, { useState } from "react";
+import { useVickreyAuction } from "@/hooks/useVIckreyAuction";
+import { convertUnixToUTC } from "@/utils/converter";
+import { useEncryptedERC20 } from "@/hooks/useEncryptedERC20";
+import { vickreyAuction } from "@/constants/vickreyAuction";
+import { toHexString } from "@/utils/toHexString";
 
 export default function Home() {
   const { getInstance, isInitialized } = StateContext();
   const [amount, setAmount] = useState<string>("");
+  const { endTime } = useVickreyAuction();
+  const {
+    name,
+    symbol,
+    totalSupply,
+    balanceOf,
+    allowance,
+    mintToken,
+    approveSpender,
+    isLoadingMint,
+    isLoadingApproval,
+  } = useEncryptedERC20();
 
   const instance: FhevmInstance = getInstance();
 
-  function encryptEuint32() {
-    if (!isInitialized || !instance)
-      return console.error("Instance not initialized");
-    const euint32 = instance.encrypt32(1234);
-    console.log("euint32: ", euint32);
+  console.log("totalSupply", totalSupply?.data);
+
+  function encryptEuint32(amount: number): Uint8Array {
+    if (!isInitialized || !instance) alert("Fhevm instance not initialized");
+    return instance.encrypt32(amount);
   }
 
   const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -38,7 +54,6 @@ export default function Home() {
 
   return (
     <main>
-      {/* <Button onClick={() => encryptEuint32()}>Click me</Button> */}
       <Card className="lg:w-[1000px] w-[350px] mx-auto my-12">
         <CardHeader>
           <CardTitle>Vickrey Auction</CardTitle>
@@ -60,7 +75,9 @@ export default function Home() {
               <Label className=" font-semibold text-xl">
                 Lorem ipsum dolor sit, amet consectetur adipisicing elit.
               </Label>
-              <Label className="text-gray-400">End: </Label>
+              <Label className="text-gray-400">
+                End: {convertUnixToUTC(endTime?.data as bigint)}
+              </Label>
               <Label>Place your bid</Label>
               <Input
                 type="text"
@@ -72,7 +89,18 @@ export default function Home() {
                   handleInput(e)
                 }
               />
-              <Button className="w-full mt-4">Place Bid</Button>
+              <Button
+                className="w-full mt-4"
+                onClick={async () => {
+                  // await mintToken(100);
+                  await approveSpender(
+                    vickreyAuction.address,
+                    toHexString(encryptEuint32(100)) as `0x${string}`
+                  );
+                }}
+              >
+                Place Bid
+              </Button>
             </div>
           </div>
         </CardContent>

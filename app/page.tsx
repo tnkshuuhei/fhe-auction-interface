@@ -1,4 +1,5 @@
 "use client";
+import LoadingButton from "@/components/LoadingButton";
 import { Button } from "@/components/ui/button";
 import { StateContext } from "@/contexts";
 import { FhevmInstance } from "fhevmjs";
@@ -18,11 +19,13 @@ import { convertUnixToUTC } from "@/utils/converter";
 import { useEncryptedERC20 } from "@/hooks/useEncryptedERC20";
 import { vickreyAuction } from "@/constants/vickreyAuction";
 import { toHexString } from "@/utils/toHexString";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function Home() {
   const { getInstance, isInitialized } = StateContext();
   const [amount, setAmount] = useState<string>("");
-  const { endTime } = useVickreyAuction();
+  const { endTime, placeBid, isLoadingBid, claimBid, isLoadingClaim } =
+    useVickreyAuction();
   const {
     name,
     symbol,
@@ -36,8 +39,6 @@ export default function Home() {
   } = useEncryptedERC20();
 
   const instance: FhevmInstance = getInstance();
-
-  console.log("totalSupply", totalSupply?.data);
 
   function encryptEuint32(amount: number): Uint8Array {
     if (!isInitialized || !instance) alert("Fhevm instance not initialized");
@@ -78,29 +79,125 @@ export default function Home() {
               <Label className="text-gray-400">
                 End: {convertUnixToUTC(endTime?.data as bigint)}
               </Label>
-              <Label>Place your bid</Label>
-              <Input
-                type="text"
-                placeholder="Enter your bid"
-                className="w-full"
-                value={amount}
-                pattern="^[0-9]*[.,]?[0-9]*$" // only allow numbers
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                  handleInput(e)
-                }
-              />
-              <Button
-                className="w-full mt-4"
-                onClick={async () => {
-                  // await mintToken(100);
-                  await approveSpender(
-                    vickreyAuction.address,
-                    toHexString(encryptEuint32(100)) as `0x${string}`
-                  );
-                }}
-              >
-                Place Bid
-              </Button>
+
+              <Tabs defaultValue="mint">
+                <TabsList className="grid w-full grid-cols-4">
+                  <TabsTrigger value="mint">Mint</TabsTrigger>
+                  <TabsTrigger value="approve">Approve</TabsTrigger>
+                  <TabsTrigger value="bid">Bid</TabsTrigger>
+                  <TabsTrigger value="claim">Claim</TabsTrigger>
+                </TabsList>
+                <TabsContent value="mint">
+                  <Label>Enter amount</Label>
+                  <Input
+                    type="text"
+                    placeholder="Enter amount"
+                    className="w-full"
+                    value={amount}
+                    pattern="^[0-9]*[.,]?[0-9]*$" // only allow numbers
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                      handleInput(e)
+                    }
+                  />
+                  {isLoadingMint ? (
+                    <LoadingButton message="Minting Token" />
+                  ) : (
+                    <Button
+                      className="w-full mt-4"
+                      onClick={async () => {
+                        await mintToken(Number(amount));
+                      }}
+                    >
+                      Mint Token
+                    </Button>
+                  )}
+                </TabsContent>
+                <TabsContent value="approve">
+                  <Label>Enter amount</Label>
+                  <Input
+                    type="text"
+                    placeholder="Enter amount"
+                    className="w-full"
+                    value={amount}
+                    pattern="^[0-9]*[.,]?[0-9]*$" // only allow numbers
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                      handleInput(e)
+                    }
+                  />
+                  {isLoadingApproval ? (
+                    <LoadingButton message="Approving" />
+                  ) : (
+                    <Button
+                      className="w-full mt-4"
+                      onClick={async () => {
+                        // await mintToken(Number(amount);
+                        await approveSpender(
+                          vickreyAuction.address,
+                          toHexString(encryptEuint32(Number(amount)))
+                        );
+                      }}
+                    >
+                      Approve
+                    </Button>
+                  )}
+                </TabsContent>
+                <TabsContent value="bid">
+                  <Label>Enter amount</Label>
+                  <Input
+                    type="text"
+                    placeholder="Enter amount"
+                    className="w-full"
+                    value={amount}
+                    pattern="^[0-9]*[.,]?[0-9]*$" // only allow numbers
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                      handleInput(e)
+                    }
+                  />
+                  {isLoadingBid ? (
+                    <LoadingButton message="Bidding..." />
+                  ) : (
+                    <Button
+                      className="w-full mt-4"
+                      onClick={async () => {
+                        await placeBid(
+                          toHexString(encryptEuint32(Number(amount)))
+                        );
+                      }}
+                    >
+                      Place Bid
+                    </Button>
+                  )}
+                </TabsContent>
+                <TabsContent value="claim">
+                  <Label>Enter amount</Label>
+                  <Input
+                    type="text"
+                    placeholder="Enter amount"
+                    className="w-full"
+                    value={amount}
+                    pattern="^[0-9]*[.,]?[0-9]*$" // only allow numbers
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                      handleInput(e)
+                    }
+                  />
+                  {isLoadingClaim ? (
+                    <LoadingButton message="Approving" />
+                  ) : (
+                    <Button
+                      className="w-full mt-4"
+                      onClick={async () => {
+                        // await mintToken(Number(amount);
+                        await approveSpender(
+                          vickreyAuction.address,
+                          toHexString(encryptEuint32(Number(amount)))
+                        );
+                      }}
+                    >
+                      Claim
+                    </Button>
+                  )}
+                </TabsContent>
+              </Tabs>
             </div>
           </div>
         </CardContent>

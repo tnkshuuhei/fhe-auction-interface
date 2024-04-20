@@ -1,5 +1,4 @@
 import { useToast } from "@/components/ui/use-toast";
-import { useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
 import {
   useReadContract,
@@ -50,22 +49,24 @@ export const useVickreyAuction = () => {
   const { isLoading: isLoadingClaim, isSuccess: isSuccessClaim } =
     useWaitForTransactionReceipt({ hash: claimHash });
 
-  function placeBid(encryptedValue: `0x${string}`) {
+  async function placeBid(encryptedValue: string) {
     bid(
       {
         ...vickreyAuction,
         functionName: "bid",
-        args: [encryptedValue],
+        args: [`0x${encryptedValue}`],
         chainId: 8009,
       },
       {
         onSuccess: () => toast({ description: "Tx sent" }),
-        onError: () => toast({ description: "Tx failed" }),
+        onError: (e) => {
+          toast({ title: "Tx failed", description: e.message });
+        },
       }
     );
   }
 
-  function endAuction() {
+  async function endAuction() {
     auctionEnd(
       {
         ...vickreyAuction,
@@ -74,12 +75,12 @@ export const useVickreyAuction = () => {
       },
       {
         onSuccess: () => toast({ description: "Tx sent" }),
-        onError: () => toast({ description: "Tx failed" }),
+        onError: (e) => toast({ title: "Tx failed", description: e.message }),
       }
     );
   }
 
-  function claimBid() {
+  async function claimBid() {
     claim(
       {
         ...vickreyAuction,
@@ -88,7 +89,7 @@ export const useVickreyAuction = () => {
       },
       {
         onSuccess: () => toast({ description: "Tx sent" }),
-        onError: () => toast({ description: "Tx failed" }),
+        onError: (e) => toast({ title: "Tx failed", description: e.message }),
       }
     );
   }

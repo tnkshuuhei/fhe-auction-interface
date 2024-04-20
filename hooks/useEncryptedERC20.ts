@@ -28,25 +28,28 @@ export const useEncryptedERC20 = () => {
       },
       {
         onSuccess: () => toast({ description: "Tx sent" }),
-        onError: () => toast({ description: "Tx failed" }),
+        onError: (e) => toast({ title: "Tx failed", description: e.message }),
       }
     );
   }
 
   async function approveSpender(
     spender: `0x${string}`,
-    encryptedAmount: `0x${string}`
+    encryptedAmount: string
   ) {
     approve(
       {
         ...encryptedErc20,
         functionName: "approve",
-        args: [spender, encryptedAmount],
+        args: [spender, `0x${encryptedAmount}`],
         chainId: 8009,
       },
       {
         onSuccess: () => toast({ description: "Tx sent" }),
-        onError: () => toast({ description: "Tx failed" }),
+        onError: (e) => {
+          toast({ title: "Tx failed", description: e.message });
+          console.log("error", e.message);
+        },
       }
     );
   }

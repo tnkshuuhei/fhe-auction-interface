@@ -1,9 +1,11 @@
 "use client";
 import { useEthersProvider } from "@/hooks/useEthers";
-import { FhevmInstance, initFhevm } from "fhevmjs";
-import { createContext, useContext, useMemo, useState } from "react";
-import { createInstance } from "fhevmjs/web";
-import { ethers } from "ethers";
+import { FhevmInstance, initFhevm, createInstance } from "fhevmjs";
+import { createContext, useContext, useEffect, useMemo, useState } from "react";
+// import { createInstance } from "fhevmjs/web";
+import { BrowserProvider, ethers } from "ethers";
+import { useAccount } from "wagmi";
+import { encryptedErc20 } from "@/constants/encryptedErc20";
 
 const stateContext = createContext<any>(null);
 
@@ -12,12 +14,29 @@ export const StateProvider = ({ children }: { children: React.ReactNode }) => {
   const [instance, setInstance] = useState<FhevmInstance | null>(null);
   const [publicKey, setPublicKey] = useState<`0x${string}`>();
   const chainId = 8009;
-  const provider = useEthersProvider({ chainId });
+  const provider = new BrowserProvider(window.ethereum);
+  const { address } = useAccount();
+
+  const [tokenPubKey, setTokenPubKey] = useState<Uint8Array>();
+  const [tokenSig, setTokenSig] = useState<string>();
 
   useMemo(async () => {
     await initFhevm();
     await createFhevmInstance();
   }, []);
+
+  useEffect(() => {
+    async function getSignature() {
+      if (!address || !instance) return;
+      await getTokenSignature(encryptedErc20.address, address as string).then(
+        (result) => {
+          setTokenSig(result?.signature);
+          setTokenPubKey(result?.publicKey);
+        }
+      );
+    }
+    getSignature();
+  }, [address, instance]);
 
   const createFhevmInstance = async () => {
     if (!provider) return;
@@ -44,18 +63,20 @@ export const StateProvider = ({ children }: { children: React.ReactNode }) => {
     contractAddress: string,
     userAddress: string
   ) => {
-    if (instance?.hasKeypair(contractAddress)) {
-      return instance.getTokenSignature(contractAddress)!;
+    if (!instance) return;
+    if (instance.hasKeypair(contractAddress)) {
+      return instance.getTokenSignature(contractAddress);
     } else {
-      const { publicKey, token } = instance!.generateToken({
+      const { publicKey, token } = instance.generateToken({
         verifyingContract: contractAddress,
       });
+
       const params = [userAddress, JSON.stringify(token)];
       const signature: string = await window.ethereum.request({
         method: "eth_signTypedData_v4",
         params,
       });
-      instance!.setTokenSignature(contractAddress, signature);
+      instance.setTokenSignature(contractAddress, signature);
       return { signature, publicKey };
     }
   };
@@ -72,6 +93,10 @@ export const StateProvider = ({ children }: { children: React.ReactNode }) => {
         getInstance,
         isInitialized,
         publicKey,
+        tokenPubKey,
+        tokenSig,
+        address,
+        provider,
       }}
     >
       {children}

@@ -6,9 +6,12 @@ import {
   useWaitForTransactionReceipt,
 } from "wagmi";
 import { vickreyAuction } from "@/constants/vickreyAuction";
+import { StateContext } from "@/contexts";
 
 export const useVickreyAuction = () => {
   const { toast } = useToast();
+  const { getInstance, tokenPubKey, tokenSig, address } = StateContext();
+  const instance = getInstance();
 
   const beneficiary = useReadContract({
     ...vickreyAuction,
@@ -25,14 +28,24 @@ export const useVickreyAuction = () => {
   const isHighestBidder = useReadContract({
     ...vickreyAuction,
     functionName: "doIHaveHighestBid",
-    args: ["0x", "0x"], // publickey, signature
+    args: [tokenPubKey, tokenSig], // publickey, signature
     chainId: 8009,
+  });
+
+  const bids = useReadContract({
+    ...vickreyAuction,
+    functionName: "bids",
+    args: [address],
+    chainId: 8009,
+    query: {
+      refetchInterval: 30000,
+    },
   });
 
   const bidData = useReadContract({
     ...vickreyAuction,
     functionName: "getBid",
-    args: ["0x", "0x"], // publickey, signature
+    args: [tokenPubKey, tokenSig], // publickey, signature
     chainId: 8009,
     query: {
       refetchInterval: 30000,

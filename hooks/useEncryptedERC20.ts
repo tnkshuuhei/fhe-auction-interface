@@ -1,6 +1,10 @@
+"use client";
 import { useToast } from "@/components/ui/use-toast";
 import { encryptedErc20 } from "@/constants/encryptedErc20";
-import { useEffect } from "react";
+import { vickreyAuction } from "@/constants/vickreyAuction";
+import { StateContext } from "@/contexts";
+import { ethers } from "ethers";
+import { useEffect, useState } from "react";
 import {
   useReadContract,
   useWaitForTransactionReceipt,
@@ -9,6 +13,7 @@ import {
 
 export const useEncryptedERC20 = () => {
   const { toast } = useToast();
+  const { tokenPubKey, tokenSig, address, provider } = StateContext();
 
   const { data: approvalHash, writeContract: approve } = useWriteContract();
   const { isLoading: isLoadingApproval, isSuccess: isSuccessApproval } =
@@ -83,13 +88,40 @@ export const useEncryptedERC20 = () => {
     chainId: 8009,
   });
 
+  async function syncBalanceOf() {
+    if (!tokenPubKey || !tokenSig) return;
+    const contract = new ethers.Contract(
+      encryptedErc20.address,
+      encryptedErc20.abi,
+      provider
+    );
+    console.log("balanceof", tokenPubKey, tokenSig);
+    return await contract.balanceOf(address, tokenPubKey, tokenSig);
+  }
+
+  async function syncAllowance() {
+    const contract = new ethers.Contract(
+      encryptedErc20.address,
+      encryptedErc20.abi,
+      provider
+    );
+    return await contract.allowance(
+      address,
+      vickreyAuction.address,
+      tokenPubKey,
+      tokenSig
+    );
+  }
+
   const balanceOf = useReadContract({
     ...encryptedErc20,
     functionName: "balanceOf",
     chainId: 8009,
-    args: [`0x`, `0x`, `0x`], // address, publickey, signature
+    args: [address, tokenPubKey, tokenSig],
     query: {
       refetchInterval: 1000,
+      initialDataUpdatedAt: 1000,
+      refetchOnMount: true,
     },
   });
 
@@ -97,9 +129,11 @@ export const useEncryptedERC20 = () => {
     ...encryptedErc20,
     functionName: "allowance",
     chainId: 8009,
-    args: [`0x`, `0x`, `0x`, `0x`], // owner, spender, publickey, signature
+    args: [address, vickreyAuction.address, tokenPubKey, tokenSig], // owner, spender, publickey, signature
     query: {
       refetchInterval: 1000,
+      initialDataUpdatedAt: 1000,
+      refetchOnMount: true,
     },
   });
 
@@ -107,8 +141,8 @@ export const useEncryptedERC20 = () => {
     name,
     symbol,
     totalSupply,
-    balanceOf,
-    allowance,
+    syncBalanceOf,
+    syncAllowance,
     mintToken,
     approveSpender,
     isLoadingMint,
